@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#00000000"
+    tools:context=".LoginRegisterActivity">
+
+    <TextView
+        android:id="@+id/static_textView2"
+        android:layout_width="193dp"
+        android:layout_height="57dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/login_register_btn_label"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <LinearLayout
+        android:id="@+id/linearlayout_id"
+        android:layout_width="335dp"
+        android:layout_height="49dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="300dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <com.rilixtech.widget.countrycodepicker.CountryCodePicker
+            android:id="@+id/ccp"
+            android:layout_width="113dp"
+            android:layout_height="47dp"
+            android:gravity="center_vertical"
+            tools:layout_editor_absoluteX="250dp"
+            tools:layout_editor_absoluteY="371dp" />
+
+        <EditText
+            android:id="@+id/phone_number_edt"
+            android:layout_width="219dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:hint="@string/enter_phone_number"
+            android:inputType="phone"
+            android:textSize="18sp"
+            tools:layout_editor_absoluteX="-3dp"
+            tools:layout_editor_absoluteY="346dp"
+            />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/login_register_btn_id"
+        android:layout_width="332dp"
+        android:layout_height="83dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/login_register_btn_label"
+        android:textColor="@color/defaultTextColor"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.531"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearlayout_id" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

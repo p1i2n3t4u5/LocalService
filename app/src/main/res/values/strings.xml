@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">LocalService</string>
+    <string name="icon_local_service">Local Service</string>
+    <string name="login_register_btn_label">Login/Register</string>
+    <string name="enter_phone_number">Enter Phone Number</string>
+    <string name="enter_varification_code">Enter Varification Code</string>
+    <string name="sent_varification_code">We have sent you a 4 digit verification code on</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="share_icon">Share</string>
+    <string name="profile_icon">Profile</string>
+    <string name="getting_location">Getting Location</string>
+    <string name="title_activity_address_search">AddressSearchActivity</string>
+    <string name="search_address">Search Address</string>
+</resources>
