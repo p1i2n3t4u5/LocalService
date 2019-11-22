@@ -2,16 +2,39 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item
+        android:id="@+id/search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom|collapseActionView"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:focusable="true"
+        android:iconifiedByDefault="false"
+
+        />
+
+<!--    <item-->
+<!--        android:id="@+id/share_id"-->
+<!--        android:icon="@drawable/ic_share"-->
+<!--        android:title="@string/share_icon"-->
+<!--        app:showAsAction="ifRoom"></item>-->
+<!--    <item-->
+<!--        android:id="@+id/profile_id"-->
+<!--        android:icon="@drawable/ic_account_circle"-->
+<!--        android:title="@string/profile_icon"-->
+<!--        app:showAsAction="ifRoom|withText"></item>-->
 
     <item
         android:id="@+id/share_id"
         android:icon="@drawable/ic_share"
         android:title="@string/share_icon"
-        app:showAsAction="ifRoom"></item>
+        app:showAsAction="never"></item>
     <item
         android:id="@+id/profile_id"
         android:icon="@drawable/ic_account_circle"
         android:title="@string/profile_icon"
-        app:showAsAction="ifRoom|withText"></item>
+        app:showAsAction="never"></item>
 
 </menu>

@@ -8,4 +8,22 @@
     tools:context=".AddressSearchActivity"
     tools:showIn="@layout/activity_address_search">
 
+    <TextView
+        android:id="@+id/user_current_location_id"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_gps_fixed"
+        android:drawableLeft="@drawable/ic_gps_fixed"
+        android:drawablePadding="20dp"
+        android:gravity="center_vertical"
+        android:padding="@dimen/google_1x"
+        android:singleLine="true"
+        android:text="@string/use_current_location"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

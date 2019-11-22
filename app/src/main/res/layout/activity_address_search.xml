@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/getting_location"
-                android:textSize="30sp"
+                android:textSize="18sp"
                 tools:text="@string/search_address" />
 
         </androidx.appcompat.widget.Toolbar>

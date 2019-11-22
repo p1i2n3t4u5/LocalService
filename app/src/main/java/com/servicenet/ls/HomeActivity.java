@@ -23,8 +23,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -37,12 +40,13 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.servicenet.ls.adapter.Adapter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity  implements SearchView.OnQueryTextListener {
 
 
     private TextView address;
@@ -73,6 +77,11 @@ public class HomeActivity extends AppCompatActivity {
     private boolean doubleBackToExitPressedOnce = false;
 
 
+    private RecyclerView recyclerView;
+    private Adapter adapter;
+    private ArrayList<String> data;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +98,24 @@ public class HomeActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+
+
+
+        recyclerView=findViewById(R.id.service_recylerview_id);
+        data=new ArrayList<>();
+        data.add("First Service Label");
+        data.add("Second Service Label");
+        data.add("Third Service Label");
+        data.add("Fourth Service Label");
+        data.add("Fifth Service Label");
+        data.add("Sixth Service Label");
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter=new Adapter(this,data);
+        recyclerView.setAdapter(adapter);
+
+
+
 
         address = (TextView) findViewById(R.id.search_address_edittext_id);
         address.setOnClickListener(new View.OnClickListener() {
@@ -212,33 +239,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.app_menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        Log.d("LocalService", "Menu clicked:" + item.getItemId());
-
-        Log.d("LocalService", "R.id.share_id:" + R.id.share_id);
-        Log.d("LocalService", "R.id.profile_id:" + R.id.profile_id);
-
-        switch (item.getItemId()) {
-
-            case R.id.share_id:
-                Toast.makeText(this, "Share option clicked", Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.profile_id:
-                Toast.makeText(this, "Profile option clicked", Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
 
     @Override
@@ -389,4 +389,78 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.app_menu, menu);
+
+        MenuItem.OnActionExpandListener onActionExpandListener= new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                Toast.makeText(HomeActivity.this, "OnActionExpandListener Expanded", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                Toast.makeText(HomeActivity.this, "OnActionExpandListener Collapsed", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        };
+
+        MenuItem searchMenuItem=menu.findItem(R.id.search);
+        searchMenuItem.setOnActionExpandListener(onActionExpandListener);
+
+        SearchView searchView=(SearchView)searchMenuItem.getActionView();
+        searchView.setOnQueryTextListener(this);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        Log.d("LocalService", "Menu clicked:" + item.getItemId());
+
+        Log.d("LocalService", "R.id.share_id:" + R.id.share_id);
+        Log.d("LocalService", "R.id.profile_id:" + R.id.profile_id);
+
+        switch (item.getItemId()) {
+
+            case R.id.share_id:
+                Toast.makeText(this, "Share option clicked", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.profile_id:
+                Toast.makeText(this, "Profile option clicked", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+
+        String userInputText=  newText.toLowerCase();
+        List<String> newList=new ArrayList<>();
+
+        for (String service:data){
+
+            if (service.toLowerCase().contains(userInputText)){
+                newList.add(service);
+            }
+
+        }
+        adapter.updateList(newList);
+
+        return true;
+    }
 }

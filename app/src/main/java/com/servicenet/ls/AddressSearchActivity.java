@@ -5,13 +5,20 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.servicenet.ls.util.GpsUtils;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
+import android.widget.TextView;
 
 public class AddressSearchActivity extends AppCompatActivity {
+
+    private TextView userCurrentLocation;
+
+    private boolean isContinue = false;
+    private boolean isGPS = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +35,27 @@ public class AddressSearchActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        userCurrentLocation=findViewById(R.id.user_current_location_id);
+        userCurrentLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new GpsUtils(AddressSearchActivity.this).turnGPSOn(new GpsUtils.OnGpsListener() {
+                    @Override
+                    public void gpsStatus(boolean isGPSEnable) {
+                        // turn on GPS
+                        isGPS = isGPSEnable;
+                    }
+                });
+
+            }
+        });
+
+
+
+
+
     }
 
     @Override
