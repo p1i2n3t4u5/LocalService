@@ -2,6 +2,7 @@ package com.servicenet.ls;
 
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,12 +42,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.servicenet.ls.adapter.Adapter;
+import com.servicenet.ls.util.AppConstants;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class HomeActivity extends AppCompatActivity  implements SearchView.OnQueryTextListener {
+public class HomeActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
 
     private TextView address;
@@ -57,6 +60,12 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private long UPDATE_INTERVAL = 5000, FASTEST_INTERVAL = 5000; // == 5 SEC
+
+    private static final int MAX_LOCATION_UPDATES = 3;
+    private static int location_update_count = 0;
+    private static Double LATITUDE = 0.0;
+    private static Double LONGITUDE = 0.0;
+    private static String addressString;
 
 
     //lists for permission
@@ -82,7 +91,6 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
     private ArrayList<String> data;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,10 +108,8 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
         });
 
 
-
-
-        recyclerView=findViewById(R.id.service_recylerview_id);
-        data=new ArrayList<>();
+        recyclerView = findViewById(R.id.service_recylerview_id);
+        data = new ArrayList<>();
         data.add("First Service Label");
         data.add("Second Service Label");
         data.add("Third Service Label");
@@ -111,23 +117,18 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
         data.add("Fifth Service Label");
         data.add("Sixth Service Label");
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter=new Adapter(this,data);
+        adapter = new Adapter(this, data);
         recyclerView.setAdapter(adapter);
-
-
 
 
         address = (TextView) findViewById(R.id.search_edittext_id);
         address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this,AddressSearchActivity.class));
+                startActivity(new Intent(HomeActivity.this, AddressSearchActivity.class));
                 finish();
             }
         });
-
-
-
 
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -170,46 +171,59 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
                             if (location != null) {
                                 // Logic to handle location object
 
-                                //address.setText(String.valueOf(location.getLatitude()) + "  (1)  " + String.valueOf(location.getLongitude()));
-                                getCompleteAddressString(location.getLatitude(),location.getLongitude());
+                                Log.d("LocalService", "HomeActivity onCreate() addOnSuccessListener() : " + location.getLatitude() + "  " + location.getLongitude());
+                                if (location_update_count < MAX_LOCATION_UPDATES) {
+                                    location_update_count++;
+                                    LATITUDE=location.getLatitude();
+                                    LONGITUDE=location.getLongitude();
+                                    getCompleteAddressString(LATITUDE, LONGITUDE);
+                                }
 
                             } else {
-                                Toast.makeText(HomeActivity.this, "location is null (1)", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(HomeActivity.this, "location is null", Toast.LENGTH_SHORT).show();
+                                Log.d("LocalService", "HomeActivity onCreate() addOnSuccessListener() location is null");
                             }
                         }
                     });
 
 
-
             mFusedLocationClient.getLastLocation().addOnFailureListener(this, new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(HomeActivity.this, "Failed to fetch location in (1)", Toast.LENGTH_SHORT).show();
+                    Log.d("LocalService", "HomeActivity onCreate() addOnFailureListener() : " + e.getMessage());
                 }
             });
 
             locationRequest = LocationRequest.create();
             locationRequest.setInterval(UPDATE_INTERVAL);
             locationRequest.setFastestInterval(FASTEST_INTERVAL);
-            if (address.getText().toString().equals(""))
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            else
-                locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+//            if (address.getText().toString().equals(""))
+//                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//            else
+            locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
             mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     for (Location location : locationResult.getLocations()) {
                         // Update UI with location data
-                        // address.setText(String.valueOf(location.getLatitude()) + " (2) " + String.valueOf(location.getLongitude()));
-                        getCompleteAddressString(location.getLatitude(),location.getLongitude());
+                        Log.d("LocalService", "HomeActivity onCreate() onLocationResult() : " + location.getLatitude() + "  " + location.getLongitude());
+                        if (location_update_count < MAX_LOCATION_UPDATES) {
+                            location_update_count++;
+                            LATITUDE=location.getLatitude();
+                            LONGITUDE=location.getLongitude();
+                            getCompleteAddressString(LATITUDE, LONGITUDE);
+                        }
                     }
                 }
             };
         } catch (SecurityException ex) {
             ex.printStackTrace();
+            Log.w("LocalService", "onCreate() SecurityException : " + ex.getMessage());
+
         } catch (Exception e) {
             e.printStackTrace();
+            Log.w("LocalService", "onCreate() Exception : " + e.getMessage());
         }
 
 
@@ -217,6 +231,7 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
 
 
     private ArrayList<String> permissionsToRequest(List<String> wantedPermissions) {
+        Log.w("LocalService", "permissionsToRequest() wantedPermissions: " + wantedPermissions);
         ArrayList<String> result = new ArrayList<>();
         for (String perm : wantedPermissions) {
             if (!hashPermission(perm)) {
@@ -224,6 +239,7 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
             }
 
         }
+        Log.w("LocalService", "permissionsToRequest() needed permissions: " + result.size());
         return result;
     }
 
@@ -237,19 +253,33 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
     }
 
 
-
-
     @Override
     protected void onStart() {
         super.onStart();
-        getLastLocation();
-        startLocationUpdates();
+        Log.d("LocalService", "HomeActivity onStart()");
+
+        if (LATITUDE !=0.0 && LONGITUDE != 0.0){
+            address.setText(addressString);
+            stopLocationUpdates();
+        }else {
+            getLastLocation();
+            startLocationUpdates();
+        }
+
+
 
     }
 
     @Override
     protected void onResume() {
+        Log.d("LocalService", "HomeActivity onResume()");
         super.onResume();
+        if (LATITUDE !=0.0 && LONGITUDE != 0.0){
+            address.setText(addressString);
+            stopLocationUpdates();
+        }else {
+            startLocationUpdates();
+        }
         this.doubleBackToExitPressedOnce = false;
 
     }
@@ -257,6 +287,7 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
 
     @Override
     protected void onPause() {
+        Log.d("LocalService", "HomeActivity onPause()");
         stopLocationUpdates();
         super.onPause();
 
@@ -299,6 +330,7 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
 
 
     private boolean hasPermission(String permission) {
+        Log.d("LocalService", "HomeActivity hasPermission():" + permission);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
         }
@@ -308,6 +340,7 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
 
 
     private void getLastLocation() {
+        Log.d("LocalService", "HomeActivity getLastLocation()");
         mFusedLocationClient.getLastLocation()
                 .addOnCompleteListener(this, new OnCompleteListener<Location>() {
                     @Override
@@ -315,11 +348,17 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
                         if (task.isSuccessful() && task.getResult() != null) {
                             lastLocation = task.getResult();
 
-                            //address.setText(String.valueOf(lastLocation.getLatitude()) + "  (3)  " + String.valueOf(lastLocation.getLongitude()));
-                            getCompleteAddressString(lastLocation.getLatitude(),lastLocation.getLongitude());
+                            Log.d("LocalService", "HomeActivity getLastLocation() : " + lastLocation.getLatitude() + "  " + lastLocation.getLongitude());
+
+                            if (location_update_count < MAX_LOCATION_UPDATES) {
+                                location_update_count++;
+                                LATITUDE=lastLocation.getLatitude();
+                                LONGITUDE=lastLocation.getLongitude();
+                                getCompleteAddressString(LATITUDE, LONGITUDE);
+                            }
 
                         } else {
-                            Log.w("LocalService", "getLastLocation:exception", task.getException());
+                            Log.w("LocalService", "HomeActivity getLastLocation:exception", task.getException());
                             Toast.makeText(HomeActivity.this, "No Location Detected", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -327,11 +366,13 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
     }
 
     private void stopLocationUpdates() {
+        Log.d("LocalService", "HomeActivity stopLocationUpdates()");
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
 
     private void startLocationUpdates() {
+        Log.d("LocalService", "HomeActivity startLocationUpdates()");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -340,12 +381,15 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+            Log.d("LocalService", "HomeActivity startLocationUpdates()  permission not granted");
             return;
         }
+        Log.d("LocalService", "HomeActivity startLocationUpdates()  permission  granted");
         mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
     }
 
     private String getCompleteAddressString(double LATITUDE, double LONGITUDE) {
+        Log.d("LocalService", "HomeActivity getCompleteAddressString()" + LATITUDE + "  " + LONGITUDE+"  "+location_update_count);
         String strAdd = "";
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         try {
@@ -360,23 +404,24 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
                 strAdd = strReturnedAddress.toString();
 
                 address.setText(strAdd);
+                addressString=strAdd;
 
-                Log.d("LocalService", "My Current location address" + strReturnedAddress.toString());
+                Log.d("LocalService", "HomeActivity My Current location address" + strReturnedAddress.toString());
             } else {
 
-                Log.d("LocalService", "No Address returned!");
+                Log.d("LocalService", "HomeActivity No Address returned!");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d("LocalService", "Cannot get Address!");
+            Log.d("LocalService", "HomeActivity Cannot get Address!");
         }
         return strAdd;
     }
 
 
-
     @Override
     public void onBackPressed() {
+        Log.d("LocalService", "HomeActivity onBackPressed()");
         if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
             return;
@@ -387,13 +432,11 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
     }
 
 
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.app_menu, menu);
 
-        MenuItem.OnActionExpandListener onActionExpandListener= new MenuItem.OnActionExpandListener() {
+        MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
                 Toast.makeText(HomeActivity.this, "OnActionExpandListener Expanded", Toast.LENGTH_SHORT).show();
@@ -407,10 +450,10 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
             }
         };
 
-        MenuItem searchMenuItem=menu.findItem(R.id.search);
+        MenuItem searchMenuItem = menu.findItem(R.id.search);
         searchMenuItem.setOnActionExpandListener(onActionExpandListener);
 
-        SearchView searchView=(SearchView)searchMenuItem.getActionView();
+        SearchView searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setOnQueryTextListener(this);
         return super.onCreateOptionsMenu(menu);
     }
@@ -419,10 +462,10 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        Log.d("LocalService", "Menu clicked:" + item.getItemId());
+        Log.d("LocalService", "HomeActivityMenu clicked:" + item.getItemId());
 
-        Log.d("LocalService", "R.id.share_id:" + R.id.share_id);
-        Log.d("LocalService", "R.id.profile_id:" + R.id.profile_id);
+        Log.d("LocalService", "HomeActivity R.id.share_id:" + R.id.share_id);
+        Log.d("LocalService", "HomeActivity R.id.profile_id:" + R.id.profile_id);
 
         switch (item.getItemId()) {
 
@@ -438,7 +481,6 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
     }
 
 
-
     @Override
     public boolean onQueryTextSubmit(String query) {
         return false;
@@ -447,12 +489,12 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
     @Override
     public boolean onQueryTextChange(String newText) {
 
-        String userInputText=  newText.toLowerCase();
-        List<String> newList=new ArrayList<>();
+        String userInputText = newText.toLowerCase();
+        List<String> newList = new ArrayList<>();
 
-        for (String service:data){
+        for (String service : data) {
 
-            if (service.toLowerCase().contains(userInputText)){
+            if (service.toLowerCase().contains(userInputText)) {
                 newList.add(service);
             }
 
@@ -460,5 +502,12 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
         adapter.updateList(newList);
 
         return true;
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("LocalService", "HomeActivity onActivityResult()  : " + resultCode);
     }
 }
