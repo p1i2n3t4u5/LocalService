@@ -14,4 +14,5 @@
     <string name="use_current_location">Use current location</string>
     <string name="search">Search</string>
     <string name="sample_description">Of some description\" is a frequently-encountered but vaguely-defined descriptor used to indicate the level of detail of an object or person without actually describing it. ... Often, \"of some description\" is used to (not) describe rather ordinary things, e.g</string>
+    <string name="serach_address_here">Search Address Here</string>
 </resources>

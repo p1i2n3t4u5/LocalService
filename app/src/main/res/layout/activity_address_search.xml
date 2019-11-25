@@ -7,6 +7,7 @@
     tools:context=".AddressSearchActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -16,16 +17,18 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" >
+            app:popupTheme="@style/AppTheme.PopupOverlay">
 
-            <TextView
-                android:id="@+id/search_address_edittext_id"
+            <EditText
+                android:id="@+id/search_edittext_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/getting_location"
+                android:hint="@string/serach_address_here"
                 android:textSize="18sp"
-                tools:text="@string/search_address" />
+                tools:text="@string/search_address"
+                android:importantForAutofill="no"
+                android:inputType="text"/>
 
         </androidx.appcompat.widget.Toolbar>
 

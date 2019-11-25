@@ -117,7 +117,7 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
 
 
 
-        address = (TextView) findViewById(R.id.search_address_edittext_id);
+        address = (TextView) findViewById(R.id.search_edittext_id);
         address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -205,8 +205,6 @@ public class HomeActivity extends AppCompatActivity  implements SearchView.OnQue
                         getCompleteAddressString(location.getLatitude(),location.getLongitude());
                     }
                 }
-
-                ;
             };
         } catch (SecurityException ex) {
             ex.printStackTrace();
