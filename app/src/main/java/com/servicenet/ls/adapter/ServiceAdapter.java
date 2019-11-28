@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,7 +16,7 @@ import com.servicenet.ls.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
+public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ViewHolder> {
 
 
     private LayoutInflater layoutInflater;
@@ -44,7 +43,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         }
     }
 
-    public Adapter(Context context,List<String> data){
+    public ServiceAdapter(Context context, List<String> data){
         this.layoutInflater= LayoutInflater.from(context);
         this.data=data;
         this.context=context;
@@ -53,13 +52,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @NonNull
     @Override
-    public Adapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
+    public ServiceAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         View view=layoutInflater.inflate(R.layout.service_item,viewGroup,false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull Adapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(@NonNull ServiceAdapter.ViewHolder viewHolder, int position) {
 
         String title= data.get(position);
         viewHolder.textTitle.setText(title);

@@ -2,7 +2,6 @@ package com.servicenet.ls;
 
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,10 +40,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.servicenet.ls.adapter.Adapter;
-import com.servicenet.ls.util.AppConstants;
+import com.servicenet.ls.adapter.ServiceAdapter;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -61,11 +58,12 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private long UPDATE_INTERVAL = 5000, FASTEST_INTERVAL = 5000; // == 5 SEC
 
-    private static final int MAX_LOCATION_UPDATES = 3;
+    private static final int MAX_LOCATION_UPDATES = 2;
     private static int location_update_count = 0;
     private static Double LATITUDE = 0.0;
     private static Double LONGITUDE = 0.0;
-    private static String addressString;
+    private static String ADDRESS_STRING;
+    private static boolean IS_LOCATION_FIXED = false;
 
 
     //lists for permission
@@ -87,7 +85,7 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
 
 
     private RecyclerView recyclerView;
-    private Adapter adapter;
+    private ServiceAdapter serviceAdapter;
     private ArrayList<String> data;
 
 
@@ -117,8 +115,8 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
         data.add("Fifth Service Label");
         data.add("Sixth Service Label");
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new Adapter(this, data);
-        recyclerView.setAdapter(adapter);
+        serviceAdapter = new ServiceAdapter(this, data);
+        recyclerView.setAdapter(serviceAdapter);
 
 
         address = (TextView) findViewById(R.id.search_edittext_id);
@@ -161,6 +159,19 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
         }
 
 
+        Intent intent=getIntent();
+        String address=intent.getStringExtra("ADDRESS");
+        double latitude=intent.getDoubleExtra("LATITUDE",0.0);
+        double longitude=intent.getDoubleExtra("LONGITUDE",0.0);
+        if (address!=null && latitude != 0.0 && longitude != 0.0){
+            IS_LOCATION_FIXED =true;
+            LATITUDE=latitude;
+            LONGITUDE=longitude;
+            ADDRESS_STRING=address;
+            Log.d("LocalService", "HomeActivity received data from AddressSearchActivity :"+address+"  "+latitude+"  "+longitude);
+        }
+
+
         try {
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             mFusedLocationClient.getLastLocation()
@@ -172,11 +183,14 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
                                 // Logic to handle location object
 
                                 Log.d("LocalService", "HomeActivity onCreate() addOnSuccessListener() : " + location.getLatitude() + "  " + location.getLongitude());
-                                if (location_update_count < MAX_LOCATION_UPDATES) {
+                                if ((location_update_count < MAX_LOCATION_UPDATES) && !IS_LOCATION_FIXED) {
                                     location_update_count++;
                                     LATITUDE=location.getLatitude();
                                     LONGITUDE=location.getLongitude();
                                     getCompleteAddressString(LATITUDE, LONGITUDE);
+                                }else {
+                                    Log.d("LocalService", "HomeActivity stop location updates 1");
+                                    startLocationUpdates();
                                 }
 
                             } else {
@@ -208,11 +222,14 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
                     for (Location location : locationResult.getLocations()) {
                         // Update UI with location data
                         Log.d("LocalService", "HomeActivity onCreate() onLocationResult() : " + location.getLatitude() + "  " + location.getLongitude());
-                        if (location_update_count < MAX_LOCATION_UPDATES) {
+                        if ((location_update_count < MAX_LOCATION_UPDATES) && !IS_LOCATION_FIXED) {
                             location_update_count++;
                             LATITUDE=location.getLatitude();
                             LONGITUDE=location.getLongitude();
                             getCompleteAddressString(LATITUDE, LONGITUDE);
+                        }else {
+                            stopLocationUpdates();
+                            Log.d("LocalService", "HomeActivity stop location updates 2");
                         }
                     }
                 }
@@ -258,25 +275,24 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onStart();
         Log.d("LocalService", "HomeActivity onStart()");
 
-        if (LATITUDE !=0.0 && LONGITUDE != 0.0){
-            address.setText(addressString);
+        if (IS_LOCATION_FIXED){
+            address.setText(ADDRESS_STRING);
             stopLocationUpdates();
+            Log.d("LocalService", "HomeActivity stop location updates 3");
         }else {
             getLastLocation();
             startLocationUpdates();
         }
-
-
-
     }
 
     @Override
     protected void onResume() {
         Log.d("LocalService", "HomeActivity onResume()");
         super.onResume();
-        if (LATITUDE !=0.0 && LONGITUDE != 0.0){
-            address.setText(addressString);
+        if (IS_LOCATION_FIXED){
+            address.setText(ADDRESS_STRING);
             stopLocationUpdates();
+            Log.d("LocalService", "HomeActivity stop location updates 4");
         }else {
             startLocationUpdates();
         }
@@ -289,6 +305,7 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onPause() {
         Log.d("LocalService", "HomeActivity onPause()");
         stopLocationUpdates();
+        Log.d("LocalService", "HomeActivity stop location updates 5");
         super.onPause();
 
     }
@@ -350,11 +367,14 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
 
                             Log.d("LocalService", "HomeActivity getLastLocation() : " + lastLocation.getLatitude() + "  " + lastLocation.getLongitude());
 
-                            if (location_update_count < MAX_LOCATION_UPDATES) {
+                            if ((location_update_count < MAX_LOCATION_UPDATES) && !IS_LOCATION_FIXED) {
                                 location_update_count++;
                                 LATITUDE=lastLocation.getLatitude();
                                 LONGITUDE=lastLocation.getLongitude();
                                 getCompleteAddressString(LATITUDE, LONGITUDE);
+                            }else {
+                                stopLocationUpdates();
+                                Log.d("LocalService", "HomeActivity stop location updates 6");
                             }
 
                         } else {
@@ -404,7 +424,7 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
                 strAdd = strReturnedAddress.toString();
 
                 address.setText(strAdd);
-                addressString=strAdd;
+                ADDRESS_STRING =strAdd;
 
                 Log.d("LocalService", "HomeActivity My Current location address" + strReturnedAddress.toString());
             } else {
@@ -499,7 +519,7 @@ public class HomeActivity extends AppCompatActivity implements SearchView.OnQuer
             }
 
         }
-        adapter.updateList(newList);
+        serviceAdapter.updateList(newList);
 
         return true;
     }

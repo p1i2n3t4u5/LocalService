@@ -65,6 +65,12 @@ public class AddressSearchActivity extends AppCompatActivity implements GpsUtils
 
     private static final int ALL_PERMISSIONS_RESULT = 1011;
 
+    private static final int MAX_LOCATION_UPDATES = 1;
+    private static int location_update_count = 0;
+    private static double LATITUDE;
+    private static double LONGITUDE;
+    private static String ADDRESS_STRING;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,39 +107,41 @@ public class AddressSearchActivity extends AppCompatActivity implements GpsUtils
 
         try {
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-            mFusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            // Got last known location. In some rare situations this can be null.
-                            if (location != null) {
-                                // Logic to handle location object
-
-                                Log.d("LocalService", "AddressSearchActivity onCreate() addOnSuccessListener() : " + location.getLatitude() + "  " + location.getLongitude());
-                                getCompleteAddressString(location.getLatitude(), location.getLongitude());
-
-                            } else {
-                                Toast.makeText(AddressSearchActivity.this, "location is null", Toast.LENGTH_SHORT).show();
-                                Log.d("LocalService", "AddressSearchActivity onCreate() addOnSuccessListener() location is null");
-                            }
-                        }
-                    });
-
-
-            mFusedLocationClient.getLastLocation().addOnFailureListener(this, new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d("LocalService", "AddressSearchActivity onCreate() addOnFailureListener() : " + e.getMessage());
-                }
-            });
+//            mFusedLocationClient.getLastLocation()
+//                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                        @Override
+//                        public void onSuccess(Location location) {
+//                            // Got last known location. In some rare situations this can be null.
+//                            if (location != null) {
+//                                // Logic to handle location object
+//
+//                                Log.d("LocalService", "AddressSearchActivity onCreate() addOnSuccessListener() : " + location.getLatitude() + "  " + location.getLongitude());
+//                                LATITUDE = location.getLatitude();
+//                                LONGITUDE = location.getLongitude();
+//                                getCompleteAddressString(location.getLatitude(), location.getLongitude());
+//
+//                            } else {
+//                                Toast.makeText(AddressSearchActivity.this, "location is null", Toast.LENGTH_SHORT).show();
+//                                Log.d("LocalService", "AddressSearchActivity onCreate() addOnSuccessListener() location is null");
+//                            }
+//                        }
+//                    });
+//
+//
+//            mFusedLocationClient.getLastLocation().addOnFailureListener(this, new OnFailureListener() {
+//                @Override
+//                public void onFailure(@NonNull Exception e) {
+//                    Log.d("LocalService", "AddressSearchActivity onCreate() addOnFailureListener() : " + e.getMessage());
+//                }
+//            });
 
             locationRequest = LocationRequest.create();
             locationRequest.setInterval(UPDATE_INTERVAL);
             locationRequest.setFastestInterval(FASTEST_INTERVAL);
 //            if (address.getText().toString().equals(""))
-//                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 //            else
-            locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+            //locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
             mLocationCallback = new LocationCallback() {
                 @Override
@@ -141,7 +149,19 @@ public class AddressSearchActivity extends AppCompatActivity implements GpsUtils
                     for (Location location : locationResult.getLocations()) {
                         // Update UI with location data
                         Log.d("LocalService", "AddressSearchActivity onCreate() onLocationResult() : " + location.getLatitude() + "  " + location.getLongitude());
-                        getCompleteAddressString(location.getLatitude(), location.getLongitude());
+                        if (location_update_count < MAX_LOCATION_UPDATES) {
+                            location_update_count++;
+                            LATITUDE=location.getLatitude();
+                            LONGITUDE=location.getLongitude();
+                            getCompleteAddressString(LATITUDE, LONGITUDE);
+                        }else {
+                            Intent intent = new Intent(AddressSearchActivity.this, HomeActivity.class);
+                            intent.putExtra("ADDRESS",ADDRESS_STRING);
+                            intent.putExtra("LATITUDE",LATITUDE);
+                            intent.putExtra("LONGITUDE",LONGITUDE);
+                            startActivity(intent);
+                            finish();
+                        }
 
                     }
                 }
@@ -215,7 +235,8 @@ public class AddressSearchActivity extends AppCompatActivity implements GpsUtils
 
         isGPS = isGPSEnable;
         Log.d("LocalService", "AddressSearchActivity isGPS:" + isGPS);
-       // startLocationUpdates();
+        getLastLocation();
+        startLocationUpdates();
     }
 
 
@@ -264,7 +285,8 @@ public class AddressSearchActivity extends AppCompatActivity implements GpsUtils
             if (requestCode == AppConstants.GPS_REQUEST) {
                 isGPS = true; // flag maintain before get location
                 Log.d("LocalService", "AddressSearchActivity isGPS:" + isGPS);
-               // startLocationUpdates();
+                getLastLocation();
+                startLocationUpdates();
             }
         }
     }
@@ -301,8 +323,8 @@ public class AddressSearchActivity extends AppCompatActivity implements GpsUtils
                     strReturnedAddress.append(returnedAddress.getAddressLine(i)).append("\n");
                 }
                 strAdd = strReturnedAddress.toString();
-
-                searchEditText.setText(strAdd);
+                ADDRESS_STRING = strAdd;
+                //searchEditText.setText(strAdd);
 
                 Log.d("LocalService", "AddressSearchActivity My Current location address" + strReturnedAddress.toString());
             } else {
@@ -356,10 +378,16 @@ public class AddressSearchActivity extends AppCompatActivity implements GpsUtils
                             lastLocation = task.getResult();
 
                             Log.d("LocalService", "HomeActivity getLastLocation() : " + lastLocation.getLatitude() + "  " + lastLocation.getLongitude());
-
-
-                                getCompleteAddressString(lastLocation.getLatitude(), lastLocation.getLongitude());
-
+                            if (location_update_count < MAX_LOCATION_UPDATES) {
+                                location_update_count++;
+                                LATITUDE=lastLocation.getLatitude();
+                                LONGITUDE=lastLocation.getLongitude();
+                                getCompleteAddressString(LATITUDE, LONGITUDE);
+                            }else {
+                                Intent intent = new Intent(AddressSearchActivity.this, HomeActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
 
                         } else {
                             Log.w("LocalService", "HomeActivity getLastLocation:exception", task.getException());
